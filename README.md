@@ -48,14 +48,25 @@ It ends with `Summary: 12 passed, 0 failed.`
 
 ![StopCode dashboard: the original goal, completion criteria with evidence, the next step and one Clock out button](docs/img/dashboard.png)
 
-Then, in any project of your own:
+Then use it in your own projects. Install it once and it is available in every project:
 
 ```bash
+# inside Claude Code (one step, Claude Code 2.1.275 or later):
+/plugin install stopcode --marketplace CG-5228/ClaudeCodeImpactLab_hackathon
+# or from a terminal:
+claude plugin marketplace add CG-5228/ClaudeCodeImpactLab_hackathon
+claude plugin install stopcode@stopcode
+# or without installing, from your clone:
 claude --plugin-dir "/absolute/path/to/stopcode"
-# inside Claude Code:
-#   /stopcode:start Fix the login bug       record the goal
-#   /stopcode:finish 2h --protect           save a handoff, block new coding for 2 hours
-#   /stopcode:resume                        tomorrow: pick up exactly where you stopped
+```
+
+The hooks, skills and CLI have no dependencies; `npm install` is only needed for the optional
+wellness chat. Then, inside Claude Code:
+
+```text
+/stopcode:start Fix the login bug       record the goal
+/stopcode:finish 2h --protect           save a handoff, block new coding for 2 hours
+/stopcode:resume                        tomorrow: pick up exactly where you stopped
 ```
 
 ## The problem: compression burnout
@@ -181,8 +192,8 @@ node bin/stopcode.js uninstall                      # ends active quiet hours, p
 node bin/stopcode.js uninstall --purge-data --yes   # also deletes the data directory
 ```
 
-Then stop passing `--plugin-dir` (or `claude plugin uninstall stopcode@<marketplace>` if you
-installed from a marketplace). StopCode writes only to its data directory; the plugin modifies
+Then stop passing `--plugin-dir` (or `claude plugin uninstall stopcode@stopcode` if you
+installed it from the marketplace). StopCode writes only to its data directory; the plugin modifies
 nothing else on your machine.
 
 ## Demo

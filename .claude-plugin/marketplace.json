@@ -1,0 +1,14 @@
+{
+  "name": "stopcode",
+  "description": "StopCode: know when to exit the loop. A Claude Code plugin against compression burnout.",
+  "owner": {
+    "name": "StopCode contributors"
+  },
+  "plugins": [
+    {
+      "name": "stopcode",
+      "source": "./",
+      "description": "Know when to exit the loop. Mission tracking, honest handoffs, parked ideas and opt-in quiet hours for Claude Code."
+    }
+  ]
+}
