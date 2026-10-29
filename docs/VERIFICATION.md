@@ -69,7 +69,11 @@ without the fixes):
 Behaviour change after the live runs above: the advisory note after 3 hours or outside working
 hours is now opt-in (`advice.timeNudges`, Settings → Boundary preferences); scope hints are
 unchanged. The "Advisory" row in the first table was observed with the old default.
-`tests/hooks.quiet.test.js` covers both defaults.
+`tests/hooks.quiet.test.js` covers both defaults. `scripts/live-check.sh` was re-run after this
+change: `Summary: 11 passed, 0 failed.`
+
+CI: `.github/workflows/test.yml` (Ubuntu and macOS, Node 22 and 24) runs `npm test`,
+`npm run try` and the sample-project check; first run succeeded on all four jobs.
 
 `npm test`: 27 passed, 0 failed (includes `npm run try`, which reports `Summary: 13 passed, 0 failed.`). `claude plugin validate .`: passed. `scripts/live-check.sh`
 with real Claude Code 2.1.308 (model `claude-sonnet-5-5`): `Summary: 11 passed, 0 failed`:

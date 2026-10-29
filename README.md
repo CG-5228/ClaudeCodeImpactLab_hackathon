@@ -1,5 +1,7 @@
 # StopCode
 
+[![test](https://github.com/CG-5228/ClaudeCodeImpactLab_hackathon/actions/workflows/test.yml/badge.svg)](https://github.com/CG-5228/ClaudeCodeImpactLab_hackathon/actions/workflows/test.yml)
+
 **Know when to exit the loop.** AI helps you code faster; StopCode helps you know when to stop.
 
 A Claude Code plugin plus a local dashboard that keeps your original goal visible, shows your
@@ -245,8 +247,10 @@ dashboard UI and handoff Markdown rendering (exercised manually, see `docs/VERIF
 - **Verified with fixtures / CLI only:** on macOS (Claude Code 2.1.308, Node v24.21.0,
   2026-10-29): `npm test` 27/27, `claude plugin validate .`, sample project fails 1 of 4 as
   intended, CLI start/status/finish/export through a symlinked path (`/tmp`).
-  `scripts/live-check.sh` was also re-run with real Claude Code 2.1.308 on macOS: 11 passed,
-  0 failed (model `claude-sonnet-5-5`).
+  `scripts/live-check.sh` was also run twice with real Claude Code 2.1.308 on macOS, the second
+  time after time reminders became opt-in: 11 passed, 0 failed both times (model
+  `claude-sonnet-5-5`). GitHub Actions runs `npm test`, `npm run try` and the sample-project
+  check on Ubuntu and macOS with Node 22 and 24 on every push.
 - **Not verified:** the wellness chat against the real Claude API (no API key was available);
   calendar sync (not implemented).
 
