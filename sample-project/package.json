@@ -1,0 +1,14 @@
+{
+  "name": "stopcode-sample-login",
+  "version": "1.0.0",
+  "description": "Tiny login-validation module used for the StopCode live demo. Contains one deliberate bug; see README.md.",
+  "private": true,
+  "main": "src/auth.js",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT"
+}

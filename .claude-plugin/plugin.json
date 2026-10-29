@@ -1,0 +1,9 @@
+{
+  "name": "stopcode",
+  "version": "0.1.0",
+  "description": "Know when to exit the loop. Mission tracking, honest handoffs, parked ideas and opt-in quiet hours for Claude Code, with a local dashboard, wellness chat and planner.",
+  "author": {
+    "name": "StopCode contributors"
+  },
+  "keywords": ["wellbeing", "boundaries", "handoff", "quiet-hours", "scope"]
+}

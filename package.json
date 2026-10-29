@@ -1,0 +1,18 @@
+{
+  "name": "stopcode",
+  "version": "0.1.0",
+  "description": "Know when to exit the loop. StopCode preserves your original goal, makes workload visible, parks unfinished work, and protects recovery time for AI-assisted developers.",
+  "license": "MIT",
+  "private": true,
+  "bin": { "stopcode": "bin/stopcode.js" },
+  "scripts": {
+    "start": "node bin/stopcode.js serve",
+    "serve": "node bin/stopcode.js serve",
+    "test": "node --test tests/",
+    "demo": "node scripts/demo.js",
+    "doctor": "node bin/stopcode.js doctor",
+    "validate:plugin": "claude plugin validate ."
+  },
+  "engines": { "node": ">=22" },
+  "dependencies": { "@anthropic-ai/sdk": "^1.3.0" }
+}

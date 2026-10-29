@@ -1,0 +1,13 @@
+node_modules/
+.stopcode-demo/
+.stopcode-data/
+*.log
+*.tmp
+.DS_Store
+tmp/
+design-system/
+
+# local secrets (see .env.example)
+.env
+.env.local
+!.env.example
