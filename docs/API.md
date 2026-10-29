@@ -46,7 +46,7 @@ core in `src/core/` (class `StopCode` in `domain.js`, `Planner` in `planner.js`)
 | POST | `/api/breaks/start` | `{note?}` | `{ok, break, alreadyOnBreak?}` |
 | POST | `/api/breaks/end` | | `{ok, break, notOnBreak?}` |
 | GET | `/api/settings` | | `settings` |
-| PATCH | `/api/settings` | any of `{timezone, workingHours:{mon:[{start,end}],...}, calendarQuietHours:{enabled, projectIds}, chat:{shareSummary}, advice:{enabled,minIntervalMinutes}}` | `{ok, settings}` |
+| PATCH | `/api/settings` | any of `{timezone, workingHours:{mon:[{start,end}],...}, calendarQuietHours:{enabled, projectIds}, chat:{shareSummary}, advice:{enabled,minIntervalMinutes,timeNudges}}` | `{ok, settings}` |
 | GET | `/api/planner?from=ISO&to=ISO` | | `[event + overlaps:[...]]` |
 | POST | `/api/planner` | `{title, type: work|recovery|personal, start, end, notes?, allowOverlap?: bool}` | `{ok, event, overlaps}`; 409 with `overlaps` when overlapping and `allowOverlap` is not true |
 | PATCH | `/api/planner/:eventId` | same fields, optional, plus `allowOverlap` | `{ok, event, overlaps}` or 409 |

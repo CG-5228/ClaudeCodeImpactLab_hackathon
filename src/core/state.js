@@ -19,7 +19,9 @@ function defaultSettings() {
     calendarQuietHours: { enabled: false, projectIds: [] },
     // Wellness chat only receives a StopCode summary when the user opts in.
     chat: { shareSummary: false },
-    advice: { enabled: true, minIntervalMinutes: 20 },
+    // Scope hints are on by default. Time-based notes (3 h elapsed, outside working hours) add
+    // prompts, so they are opt-in.
+    advice: { enabled: true, minIntervalMinutes: 20, timeNudges: false },
     clockOut: { lastQuietMinutes: 30, lastProtect: false },
   };
 }

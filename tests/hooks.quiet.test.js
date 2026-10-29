@@ -127,3 +127,32 @@ test('ICS export passes the structural linter with long, escaped text', () => {
   assert.deepEqual(lintIcs(ics), []);
   assert.match(ics, /SUMMARY:Recovery\\; walk\\, then dinner\\\\/);
 });
+
+test('time reminders (3 h / after hours) are opt-in; scope hints stay on by default', (t) => {
+  const s = H.mkScratch(t);
+  const proj = s.project('my project');
+  const opts = { dataDir: s.dataDir, cwd: proj };
+  const sc = new H.core.StopCode({ dataDir: s.dataDir });
+  sc.startMission({ project: proj, objective: 'Fix login validation', criteria: ['auth tests pass'], detect: false });
+  sc.updateSettings({ workingHours: H.noWorkingHours(), advice: { minIntervalMinutes: 5 } });
+  assert.equal(H.readState(s.dataDir).settings.advice.timeNudges, false, 'off by default');
+  const prompt = (id, text) => {
+    const r = H.runHook('UserPromptSubmit', H.hookInput('UserPromptSubmit', proj, 'sess-t', { prompt: text, prompt_id: id }), opts);
+    H.expectHookContract(r, id);
+    return (r.json && r.json.hookSpecificOutput && r.json.hookSpecificOutput.additionalContext) || '';
+  };
+
+  assert.equal(prompt('p1', 'fix the failing test'), '', 'outside working hours, but no reminder by default');
+  const scope = prompt('p2', 'also add dark mode while you are at it');
+  assert.match(scope, /not blocking/, 'scope hint is on by default');
+  assert.doesNotMatch(scope, /working hours/);
+
+  sc.updateSettings({ advice: { timeNudges: true, minIntervalMinutes: 5 } });
+  const st = H.readState(s.dataDir);
+  st.projects[Object.keys(st.projects)[0]].advice.lastAt = null;
+  require('fs').writeFileSync(require('path').join(s.dataDir, 'state.json'), JSON.stringify(st));
+  assert.match(prompt('p3', 'fix the failing test'), /outside the working hours/, 'reminder appears once enabled');
+
+  sc.updateSettings({ advice: { enabled: true, minIntervalMinutes: 30 } });
+  assert.equal(H.readState(s.dataDir).settings.advice.timeNudges, true, 'saving other advice fields keeps the choice');
+});

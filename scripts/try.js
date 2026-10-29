@@ -76,11 +76,11 @@ try {
   const outcomes = view().mission.evidence.map((e) => e.outcome);
   check('failing run recorded as fail, then passing run as pass', outcomes.join(',') === 'fail,pass', `evidence: ${outcomes.join(', ')}`);
 
-  step('5. Clock out: one command saves the handoff and protects the evening');
-  const fin = cli('finish', '--quiet', '30m', '--protect', '--note', 'Stopping for today');
+  step('5. The shutdown command: handoff, tomorrow\'s list, Claude Code paused until morning');
+  const fin = cli('finish', '--until', 'tomorrow', '--protect', '--note', 'Stopping for today');
   check('handoff saved, mission parked, quiet hours started', fin.status === 0 && view().quiet.enforced === true, oneLine(fin.out, 220));
   const handoff = cli('handoff', 'show').out;
-  check('handoff has the goal, the evidence and the next action', /## Original mission/.test(handoff) && /## Completion criteria and evidence/.test(handoff) && /## Next action/.test(handoff));
+  check('handoff has the goal, the evidence, tomorrow\'s next action and the parked idea', /## Original mission/.test(handoff) && /## Completion criteria and evidence/.test(handoff) && /## Next action/.test(handoff) && /Dark mode toggle/.test(handoff));
 
   step('6. "Just one more thing" at 11 pm: blocked in this project until you choose otherwise');
   const write = hook('PreToolUse', { tool_name: 'Write', tool_use_id: 'tu-3', tool_input: { file_path: path.join(proj, 'late-night.js'), content: '//' } });

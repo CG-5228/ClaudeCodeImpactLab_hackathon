@@ -1331,6 +1331,7 @@ class StopCode {
         s.advice = {
           enabled: V.bool(a.enabled, 'advice.enabled', { optional: true, fallback: true }),
           minIntervalMinutes: V.int(a.minIntervalMinutes, 'advice.minIntervalMinutes', { min: 5, max: 240, optional: true }) || s.advice.minIntervalMinutes || 20,
+          timeNudges: V.bool(a.timeNudges, 'advice.timeNudges', { optional: true, fallback: !!(s.advice && s.advice.timeNudges) }),
         };
       }
       return { ok: true, settings: s };

@@ -90,7 +90,7 @@ function adviceFor(sc, state, project, mission, session, { scopeHint, afterHours
     parts.push(`StopCode (advisory, not blocking): the active mission is "${mission.objective}". This prompt uses wording that often introduces work beyond the original goal. If part of it is outside that goal, record the decision instead of silently expanding: accept it with \`stopcode scope accept "<text>"\` or park it with \`stopcode idea add "<text>"\`. Necessary dependencies of the goal are in scope; only ask the user if it is genuinely unclear.`);
   }
   const elapsed = session ? now - T.toMs(session.startedAt) : 0;
-  if (afterHours || elapsed > 3 * 3600000) {
+  if (settings.advice.timeNudges === true && (afterHours || elapsed > 3 * 3600000)) {
     const bits = [];
     if (elapsed > 3 * 3600000) bits.push(`this coding session has ${T.humanDuration(elapsed)} of elapsed wall-clock time`);
     if (afterHours) bits.push('it is outside the working hours the user configured');

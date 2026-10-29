@@ -36,7 +36,7 @@ async function load() {
   doctorError = null;
   try {
     [doctor, settings] = await Promise.all([api.doctor(), api.settings()]);
-    adviceDraft = { enabled: settings.advice ? settings.advice.enabled !== false : true, minIntervalMinutes: (settings.advice && settings.advice.minIntervalMinutes) || 20 };
+    adviceDraft = { enabled: settings.advice ? settings.advice.enabled !== false : true, minIntervalMinutes: (settings.advice && settings.advice.minIntervalMinutes) || 20, timeNudges: !!(settings.advice && settings.advice.timeNudges) };
   } catch (e) {
     doctorError = e;
   }
@@ -140,9 +140,10 @@ function boundaryCard() {
     'section',
     { class: 'card', 'aria-labelledby': 'h-boundary' },
     h('h2', { id: 'h-boundary', class: 'card-title' }, icon('shield'), 'Boundary preferences'),
-    h('p', { class: 'card-sub' }, 'Advice is the optional context StopCode adds to Claude Code prompts (scope drift, long sessions, after hours). It is advisory only and never blocks anything.')
+    h('p', { class: 'card-sub' }, 'Advice is the optional context StopCode adds to Claude Code prompts. Scope-drift hints are on by default; long-session and after-hours reminders are off unless you turn them on. It is advisory only and never blocks anything.')
   );
   const enabled = h('input', { id: 'advice-enabled', type: 'checkbox', checked: !!adviceDraft.enabled, onChange: (e) => { adviceDraft.enabled = e.target.checked; } });
+  const timeNudges = h('input', { id: 'advice-time', type: 'checkbox', checked: !!adviceDraft.timeNudges, onChange: (e) => { adviceDraft.timeNudges = e.target.checked; } });
   const interval = h('input', {
     id: 'advice-interval',
     class: 'input',
@@ -161,6 +162,7 @@ function boundaryCard() {
   const save = btn('Save preferences', { variant: 'primary', iconName: 'check', onClick: () => saveAdvice(save) });
   append(card, 
     h('label', { class: 'check', for: 'advice-enabled' }, enabled, h('span', null, 'Add advisory StopCode context to Claude Code prompts')),
+    h('label', { class: 'check', for: 'advice-time' }, timeNudges, h('span', null, 'Also remind Claude after 3 hours or outside working hours (off by default)')),
     h('div', { class: 'field' }, h('label', { for: 'advice-interval' }, 'Minimum minutes between advice notes'), interval, h('p', { id: 'advice-interval-hint', class: 'hint' }, 'Between 5 and 240 minutes.'), adviceError ? fieldError('advice-error', adviceError) : null),
     h('div', { class: 'actions' }, save)
   );
@@ -176,9 +178,9 @@ async function saveAdvice(button) {
     return;
   }
   try {
-    const res = await withBusy(button, 'Saving', () => api.patchSettings({ advice: { enabled: !!adviceDraft.enabled, minIntervalMinutes: n } }));
+    const res = await withBusy(button, 'Saving', () => api.patchSettings({ advice: { enabled: !!adviceDraft.enabled, minIntervalMinutes: n, timeNudges: !!adviceDraft.timeNudges } }));
     settings = res.settings;
-    adviceDraft = { enabled: settings.advice.enabled !== false, minIntervalMinutes: settings.advice.minIntervalMinutes };
+    adviceDraft = { enabled: settings.advice.enabled !== false, minIntervalMinutes: settings.advice.minIntervalMinutes, timeNudges: !!settings.advice.timeNudges };
     toast('Boundary preferences saved.', 'ok');
     store.refresh();
   } catch (e) {

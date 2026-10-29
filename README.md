@@ -8,10 +8,17 @@ recovery time you choose.
 
 ## At a glance
 
+- **Which idea:** **A shutdown command.** `/stopcode:finish tomorrow --protect` is one command
+  that saves your open work as a handoff (goal, verified criteria, changed files and Git state;
+  a written record, not a commit or stash),
+  writes tomorrow's list (next action, unverified criteria, parked ideas) and pauses Claude Code
+  in that project until your next working morning. It also covers part of **a workload tracker**:
+  the dashboard shows tool actions, edits, after-hours activity and when you last recorded a
+  break, from Claude Code hook events.
 - **Who it's for:** developers who code with an AI assistant (Claude Code) and found that faster
   tools made their days longer, not shorter: they keep taking "one more task", and they find it
   hard to put down half-finished AI-assisted work at the end of the day.
-- **Our idea:** compression burnout has two engines. The goal quietly expands, and stopping feels
+- **Why it helps:** compression burnout has two engines. The goal quietly expands, and stopping feels
   like losing your place. StopCode works on both inside the tool where the work happens: it holds
   your original goal and parks extra ideas, and it turns stopping into one command that saves a
   handoff and, if you want, protects your evening.
@@ -25,9 +32,10 @@ recovery time you choose.
     until the time you chose, so a "quick fix at 11 pm" doesn't happen on autopilot.
 - **What it doesn't add:** no notifications, pop-ups, badges, streaks or scores. Apart from
   stating your goal once (`/stopcode:start`), activity is captured automatically from Claude Code
-  hooks; there is nothing to log by hand. The only nudge is a short note in *Claude's* context,
-  at most once every 20 minutes and only when a prompt looks like scope creep, a session passes
-  3 hours, or you are outside your working hours. It can be turned off in Settings.
+  hooks; there is nothing to log by hand. By default the only nudge is a short note in *Claude's*
+  context when a prompt looks like scope creep, at most once every 20 minutes. Reminders after
+  3 hours or outside working hours are off unless you turn them on; all advice can be turned off
+  in Settings.
 
 ### Try it in a minute
 
@@ -35,15 +43,16 @@ recovery time you choose.
 git clone https://github.com/CG-5228/ClaudeCodeImpactLab_hackathon.git stopcode && cd stopcode
 npm install
 npm run try                             # the whole loop end to end in ~1 s (see below)
-npm test                                # 26 tests, no network or API key needed
+npm test                                # 27 tests, no network or API key needed
 npm run demo -- --reset --seed          # sample data + dashboard at http://127.0.0.1:4821
 ```
 
 `npm run try` needs neither Claude Code nor an API key. It drives the real CLI and the real hook
 script with the same JSON Claude Code sends, in a throwaway directory, and checks what was
 actually stored: goal recorded and injected into Claude's context, scope creep noticed and the
-idea parked, failing then passing `npm test` captured as evidence, one-command clock-out with a
-handoff, a late-night tool call and prompt blocked, resume refused until an explicit override.
+idea parked, failing then passing `npm test` captured as evidence, the shutdown command (handoff
+plus tomorrow's list, Claude Code paused until the next working morning), a late-night tool call
+and prompt blocked, resume refused until an explicit override.
 It ends with `Summary: 12 passed, 0 failed.`
 
 ![StopCode dashboard: the original goal, completion criteria with evidence, the next step and one Clock out button](docs/img/dashboard.png)
@@ -65,7 +74,8 @@ wellness chat. Then, inside Claude Code:
 
 ```text
 /stopcode:start Fix the login bug       record the goal
-/stopcode:finish 2h --protect           save a handoff, block new coding for 2 hours
+/stopcode:finish tomorrow --protect     the shutdown command: handoff + tomorrow's list,
+                                        Claude Code paused in this project until morning
 /stopcode:resume                        tomorrow: pick up exactly where you stopped
 ```
 
@@ -212,10 +222,10 @@ cd sample-project && npm test     # the demo fixture: fails 1 of 4 until the del
 claude plugin validate .
 ```
 
-The suite under `tests/` (26 tests) covers: scope decisions, the completion state machine and
+The suite under `tests/` (27 tests) covers: scope decisions, the completion state machine and
 evidence parsing (`core.mission`); project identity, Git roots and symlinked paths
 (`core.projects`, `hooks.quiet`); atomic storage, backup recovery and cross-process locking
-(`core.store`); and the real hook script spawned with Claude Code-shaped stdin during protected
+(`core.store`); advice defaults (`hooks.quiet`); and the real hook script spawned with Claude Code-shaped stdin during protected
 quiet hours, the CLI allowlist, resume exit code 3 / `--override`, fail-open behaviour and `.ics`
 linting (`hooks.quiet`); and `npm run try` itself (`try`). Not covered by automated tests: the HTTP API, the wellness chat, the
 dashboard UI and handoff Markdown rendering (exercised manually, see `docs/VERIFICATION.md`).
@@ -228,7 +238,7 @@ dashboard UI and handoff Markdown rendering (exercised manually, see `docs/VERIF
   `/stopcode:resume` asking before overriding, `/stopcode:resume --override`. Details in
   `docs/VERIFICATION.md`.
 - **Verified with fixtures / CLI only:** on macOS (Claude Code 2.1.308, Node v24.21.0,
-  2026-10-29): `npm test` 26/26, `claude plugin validate .`, sample project fails 1 of 4 as
+  2026-10-29): `npm test` 27/27, `claude plugin validate .`, sample project fails 1 of 4 as
   intended, CLI start/status/finish/export through a symlinked path (`/tmp`).
   `scripts/live-check.sh` was also re-run with real Claude Code 2.1.308 on macOS: 11 passed,
   0 failed (model `claude-sonnet-5-5`).
