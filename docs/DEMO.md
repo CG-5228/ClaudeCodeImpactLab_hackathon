@@ -6,7 +6,7 @@ number is invented. Each step lists what is **not** claimed so the narration sta
 
 ## Before you start
 
-Requirements: Node 22+, Claude Code 2.1.312 or newer, Git. A browser for the dashboard.
+Requirements: Node 22+, Claude Code 2.1.308 or newer, Git. A browser for the dashboard.
 
 ```bash
 cd "<repo>"                       # the StopCode checkout (paths with spaces are fine)

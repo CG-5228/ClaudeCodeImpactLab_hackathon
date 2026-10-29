@@ -6,6 +6,48 @@ A Claude Code plugin plus a local dashboard that keeps your original goal visibl
 workload from real hook activity, parks unfinished work in an honest handoff, and protects the
 recovery time you choose.
 
+## At a glance
+
+- **Who it's for:** developers who code with an AI assistant (Claude Code) and found that faster
+  tools made their days longer, not shorter: they keep taking "one more task", and they find it
+  hard to put down half-finished AI-assisted work at the end of the day.
+- **Our idea:** compression burnout has two engines. The goal quietly expands, and stopping feels
+  like losing your place. StopCode works on both inside the tool where the work happens: it holds
+  your original goal and parks extra ideas, and it turns stopping into one command that saves a
+  handoff and, if you want, protects your evening.
+- **How it gives time back:**
+  - *Stopping costs one command.* `/stopcode:finish` (or **Clock out** in the dashboard) writes
+    the handoff for you: original goal, which criteria are verified, files and Git state, parked
+    ideas, next action. `/stopcode:resume` restores it the next day, so you don't spend the
+    start of your next session reconstructing context.
+  - *Scope creep gets parked, not done tonight.* "While you're at it" ideas go on a list for later.
+  - *Your evening stays yours.* Opt-in quiet hours block new Claude Code actions in that project
+    until the time you chose, so a "quick fix at 11 pm" doesn't happen on autopilot.
+- **What it doesn't add:** no notifications, pop-ups, badges, streaks or scores. Apart from
+  stating your goal once (`/stopcode:start`), activity is captured automatically from Claude Code
+  hooks; there is nothing to log by hand. The only nudge is a short note in *Claude's* context,
+  at most once every 20 minutes and only when a prompt looks like scope creep, a session passes
+  3 hours, or you are outside your working hours. It can be turned off in Settings.
+
+### Try it in a minute
+
+```bash
+git clone https://github.com/CG-5228/ClaudeCodeImpactLab_hackathon.git stopcode && cd stopcode
+npm install
+npm test                                # 25 tests, no network or API key needed
+npm run demo -- --reset --seed          # sample data + dashboard at http://127.0.0.1:4821
+```
+
+Then, in any project of your own:
+
+```bash
+claude --plugin-dir "/absolute/path/to/stopcode"
+# inside Claude Code:
+#   /stopcode:start Fix the login bug       record the goal
+#   /stopcode:finish 2h --protect           save a handoff, block new coding for 2 hours
+#   /stopcode:resume                        tomorrow: pick up exactly where you stopped
+```
+
 ## The problem: compression burnout
 
 AI compresses work. A task that took an afternoon now takes an hour, so the afternoon fills with
@@ -51,11 +93,11 @@ Core promise: **"I can stop without losing my place."**
 
 ## Quick start
 
-Requirements: Node >= 22, Claude Code 2.1.312 or newer (the version this was built and tested
-against), Git (optional, used for project roots and handoff Git state).
+Requirements: Node >= 22, Claude Code 2.1.308 or newer (tested on 2.1.308 on macOS and 2.1.312 on
+Windows 11), Git (optional, used for project roots and handoff Git state).
 
 ```bash
-git clone <this repository> stopcode && cd stopcode
+git clone https://github.com/CG-5228/ClaudeCodeImpactLab_hackathon.git stopcode && cd stopcode
 npm install                       # single dependency: @anthropic-ai/sdk (wellness chat only)
 claude plugin validate .          # checks .claude-plugin/plugin.json, hooks/ and skills/
 ```
@@ -258,8 +300,9 @@ dashboard UI and handoff Markdown rendering (exercised manually, see `docs/VERIF
   `docs/VERIFICATION.md`.
 - **Verified with fixtures / CLI only:** on macOS (Claude Code 2.1.308, Node v24.21.0,
   2026-10-29): `npm test` 25/25, `claude plugin validate .`, sample project fails 1 of 4 as
-  intended, CLI start/status/finish/export through a symlinked path (`/tmp`). The live
-  Claude Code check was not re-run on this machine, and 2.1.308 is older than the stated minimum.
+  intended, CLI start/status/finish/export through a symlinked path (`/tmp`).
+  `scripts/live-check.sh` was also re-run with real Claude Code 2.1.308 on macOS: 11 passed,
+  0 failed (model `claude-sonnet-5-5`).
 - **Not verified:** the wellness chat against the real Claude API (no API key was available);
   calendar sync (not implemented).
 

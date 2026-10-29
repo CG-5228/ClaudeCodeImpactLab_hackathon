@@ -11,3 +11,7 @@ design-system/
 .env
 .env.local
 !.env.example
+
+# Third-party design skills used while building; not part of StopCode
+.claude/skills/
+__pycache__/
