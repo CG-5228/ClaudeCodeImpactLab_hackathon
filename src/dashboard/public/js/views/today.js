@@ -352,6 +352,7 @@ function workloadCard(v) {
       signal('Tool actions today', String(a.toolEventsToday), 'from Claude Code hook events'),
       signal('Edits today', String(a.editsToday), 'Edit, Write, MultiEdit, NotebookEdit'),
       signal('After-hours events today', String(a.afterHoursToday), 'outside your working hours', { tone: a.afterHoursToday > 0 ? 'warn' : '' }),
+      signal('Time protected (7 days)', v.protectedTime ? (v.protectedTime.ms ? humanDuration(v.protectedTime.ms) : 'none yet') : 'none yet', v.protectedTime && (v.protectedTime.kept + v.protectedTime.overridden) ? `quiet hours kept: ${v.protectedTime.kept}, overridden: ${v.protectedTime.overridden}` : 'starts when you clock out with quiet hours', { tone: v.protectedTime && v.protectedTime.ms ? 'info' : '' }),
       signal('Time since last break', v.breaks.sinceLastBreakLabel, v.breaks.recorded ? `${plural(v.breaks.recorded, 'break')} recorded` : 'StopCode only knows about breaks you record', { small: true }),
       signal('Latest integration event', integ.lastHookEvent ? integ.lastHookEvent.event : 'No activity observed yet', integ.lastHookEvent ? integ.lastHookAge : 'Start Claude Code with the plugin loaded.', { tone: integ.lastHookEvent ? 'info' : '', small: true })
     )

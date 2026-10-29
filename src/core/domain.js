@@ -723,6 +723,29 @@ class StopCode {
     });
   }
 
+  // Time handed back to the person: how long quiet hours were in force in the last 7 days, and
+  // how many boundaries were kept versus overridden. Measured from recorded intervals only.
+  _protectedTime(project, now) {
+    const nowMs = T.toMs(now);
+    const since = nowMs - 7 * 86400000;
+    const all = [...(project.quietHistory || []), ...(project.quiet ? [project.quiet] : [])];
+    let ms = 0;
+    let kept = 0;
+    let overridden = 0;
+    for (const q of all) {
+      const start = T.toMs(q.startsAt);
+      if (!(start >= since) || start > nowMs) continue;
+      const stop = Math.min(nowMs, T.toMs(q.endsAt), T.toMs(q.overriddenAt || q.endedAt || q.endsAt));
+      if (stop > start) ms += stop - start;
+      if (q.overriddenAt) overridden++;
+      else kept++;
+    }
+    const label = kept + overridden === 0
+      ? 'none in the last 7 days'
+      : `${T.humanDuration(ms)} under quiet hours in the last 7 days; ${kept} kept, ${overridden} overridden`;
+    return { ms, kept, overridden, label };
+  }
+
   _breakStatus(state, now) {
     const open = state.breaks.find((b) => !b.endedAt);
     const ended = state.breaks.filter((b) => b.endedAt).sort((a, b) => T.toMs(b.endedAt) - T.toMs(a.endedAt));
@@ -1258,6 +1281,7 @@ class StopCode {
         lastEventAge: lastEvent ? T.humanAge(lastEvent.at, now) : null,
         skippedMalformed: skipped,
       },
+      protectedTime: this._protectedTime(project, now),
       breaks: { ...breaks, sinceLastBreakLabel: breaks.onBreak ? 'on a break now' : breaks.sinceLastBreakMs === null ? 'unknown (no break recorded)' : `${T.humanDuration(breaks.sinceLastBreakMs)} ago` },
       quiet,
       workingHours: { ...workingHours, today: (state.settings.workingHours || {})[workingHours.dayKey] || [] },

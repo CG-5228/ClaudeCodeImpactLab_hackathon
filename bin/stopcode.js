@@ -89,6 +89,7 @@ function renderStatus(view, { brief = false } = {}) {
   L.push(`Session: ${view.session ? view.session.elapsedLabel + (view.session.likelyStale ? ' — no activity for a while; Claude Code may have exited without a SessionEnd event' : '') : 'no active coding session'}`);
   L.push(`Activity today: ${view.activity.toolEventsToday} tool actions, ${view.activity.editsToday} edits, ${view.activity.afterHoursToday} after hours; last event: ${view.activity.lastEventAge || 'none observed'}`);
   L.push(`Breaks: ${view.breaks.sinceLastBreakLabel}`);
+  L.push(`Time protected: ${view.protectedTime.label}`);
   if (view.quiet.active) L.push(`Quiet hours: active until ${view.quiet.endsAtLocal} (${view.quiet.protect ? 'blocking new tool actions in this project' : 'advisory only'}; source: ${view.quiet.source})`);
   else if (view.quiet.expired) L.push(`Quiet hours: interval ended at ${view.quiet.endsAtLocal}; resume when you choose (nothing starts automatically)`);
   else if (view.quiet.overriddenAt) L.push(`Quiet hours: overridden at ${T.formatDateTime(view.quiet.overriddenAt, tz)}`);

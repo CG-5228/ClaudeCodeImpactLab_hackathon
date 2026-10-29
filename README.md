@@ -33,6 +33,9 @@ recovery time you choose.
   - *Scope creep gets parked, not done tonight.* "While you're at it" ideas go on a list for later.
   - *Your evening stays yours.* Opt-in quiet hours block new Claude Code actions in that project
     until the time you chose, so a "quick fix at 11 pm" doesn't happen on autopilot.
+  - *You can see the time you got back.* `stopcode status` and the dashboard show **Time
+    protected**: how long quiet hours were in force over the last 7 days, and how many
+    boundaries you kept versus overrode, measured from recorded intervals.
 - **What it doesn't add:** no notifications, pop-ups, badges, streaks or scores. Apart from
   stating your goal once (`/stopcode:start`), activity is captured automatically from Claude Code
   hooks; there is nothing to log by hand. By default the only nudge is a short note in *Claude's*
@@ -49,7 +52,7 @@ recovery time you choose.
 git clone https://github.com/CG-5228/ClaudeCodeImpactLab_hackathon.git stopcode && cd stopcode
 npm install
 npm run try                             # the whole loop end to end in ~1 s (see below)
-npm test                                # 27 tests, no network or API key needed
+npm test                                # 28 tests, no network or API key needed
 npm run demo -- --reset --seed          # sample data + dashboard at http://127.0.0.1:4821
 ```
 
@@ -229,7 +232,7 @@ cd sample-project && npm test     # the demo fixture: fails 1 of 4 until the del
 claude plugin validate .
 ```
 
-The suite under `tests/` (27 tests) covers: scope decisions, the completion state machine and
+The suite under `tests/` (28 tests) covers: scope decisions, the completion state machine and
 evidence parsing (`core.mission`); project identity, Git roots and symlinked paths
 (`core.projects`, `hooks.quiet`); atomic storage, backup recovery and cross-process locking
 (`core.store`); advice defaults (`hooks.quiet`); and the real hook script spawned with Claude Code-shaped stdin during protected
@@ -244,7 +247,7 @@ linting (`hooks.quiet`); and `npm run try` itself (`try`).
   `/stopcode:resume --override`.
 - **Real Claude Code, macOS:** Claude Code 2.1.308 via `scripts/live-check.sh`, run twice,
   11 passed, 0 failed both times (model `claude-sonnet-5-5`).
-- **Automated:** `npm test` 27/27, `npm run try` 13/13, `claude plugin validate .` passes, and
+- **Automated:** `npm test` 28/28, `npm run try` 13/13, `claude plugin validate .` passes, and
   GitHub Actions runs all of it plus the sample-project check on Ubuntu and macOS with Node 22
   and 24 on every push.
 

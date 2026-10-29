@@ -156,3 +156,24 @@ test('time reminders (3 h / after hours) are opt-in; scope hints stay on by defa
   sc.updateSettings({ advice: { enabled: true, minIntervalMinutes: 30 } });
   assert.equal(H.readState(s.dataDir).settings.advice.timeNudges, true, 'saving other advice fields keeps the choice');
 });
+
+test('time protected counts quiet hours in force over the last 7 days, kept vs overridden', (t) => {
+  const s = H.mkScratch(t);
+  const proj = s.project('my project');
+  const clock = H.makeClock('2026-10-20T18:00:00Z');
+  const sc = new H.core.StopCode({ dataDir: s.dataDir, now: clock.now });
+  sc.startMission({ project: proj, objective: 'Fix login validation', criteria: ['auth tests pass'], detect: false });
+  assert.equal(sc.projectView(proj).protectedTime.label, 'none in the last 7 days');
+
+  sc.startQuiet({ project: proj, minutes: 120, protect: true });   // kept: full 2 h
+  clock.tick(180);
+  sc.startQuiet({ project: proj, minutes: 600, protect: true });   // overridden after 1 h
+  clock.tick(60);
+  sc.overrideQuiet({ project: proj });
+  let pt = sc.projectView(proj).protectedTime;
+  assert.deepEqual([pt.ms, pt.kept, pt.overridden], [3 * 3600000, 1, 1]);
+
+  clock.tick(8 * 24 * 60);                                           // both fall out of the window
+  pt = sc.projectView(proj).protectedTime;
+  assert.deepEqual([pt.ms, pt.kept, pt.overridden], [0, 0, 0]);
+});
