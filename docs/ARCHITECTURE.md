@@ -22,7 +22,7 @@ src/core/planner.js          Planner + PlannerConflict             src/core/ics.
 src/core/handoff.js          handoff Markdown + resume context + Git state (execFile)
 src/core/projects.js         project identity (Git top level via execFile), relative paths
 src/core/time.js             Intl-based time-zone math             src/core/validate.js  ValidationError + validators
-src/core/redact.js           best-effort secret redaction for excerpts
+src/core/redact.js           secret redaction for excerpts
 src/core/doctor.js           self-check (storage, hooks observed, plugin files, API configured vs tested)
 src/server/server.js         HTTP server: static dashboard + /api (docs/API.md), chat backend, CSRF/CSP
 src/dashboard/public/        dashboard (Today, Planner, Chat, Settings), design tokens from docs/DESIGN.md

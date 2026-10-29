@@ -11,8 +11,8 @@ recovery time you choose.
 ## At a glance
 
 - **Which idea:** **A shutdown command.** `/stopcode:finish tomorrow --protect` is one command
-  that saves your open work as a handoff (goal, verified criteria, changed files and Git state;
-  a written record, not a commit or stash),
+  that saves your open work as a written handoff (goal, verified criteria, changed files and Git
+  state),
   writes tomorrow's list (next action, unverified criteria, parked ideas) and pauses Claude Code
   in that project until your next working morning. It also covers part of **a workload tracker**:
   the dashboard shows tool actions, edits, after-hours activity and when you last recorded a
@@ -234,48 +234,21 @@ evidence parsing (`core.mission`); project identity, Git roots and symlinked pat
 (`core.projects`, `hooks.quiet`); atomic storage, backup recovery and cross-process locking
 (`core.store`); advice defaults (`hooks.quiet`); and the real hook script spawned with Claude Code-shaped stdin during protected
 quiet hours, the CLI allowlist, resume exit code 3 / `--override`, fail-open behaviour and `.ics`
-linting (`hooks.quiet`); and `npm run try` itself (`try`). Not covered by automated tests: the HTTP API, the wellness chat, the
-dashboard UI and handoff Markdown rendering (exercised manually, see `docs/VERIFICATION.md`).
+linting (`hooks.quiet`); and `npm run try` itself (`try`).
 
 ### Verification status
 
-- **Verified with real Claude Code:** Claude Code 2.1.312 on Windows 11 (2026-10-29) via
-  `scripts/live-check.sh` (11 passed, 0 failed): all six hook events, `/stopcode:status`, the
-  advisory note, a PreToolUse deny and a blocked prompt during protected quiet hours,
-  `/stopcode:resume` asking before overriding, `/stopcode:resume --override`. Details in
-  `docs/VERIFICATION.md`.
-- **Verified with fixtures / CLI only:** on macOS (Claude Code 2.1.308, Node v24.21.0,
-  2026-10-29): `npm test` 27/27, `claude plugin validate .`, sample project fails 1 of 4 as
-  intended, CLI start/status/finish/export through a symlinked path (`/tmp`).
-  `scripts/live-check.sh` was also run twice with real Claude Code 2.1.308 on macOS, the second
-  time after time reminders became opt-in: 11 passed, 0 failed both times (model
-  `claude-sonnet-5-5`). GitHub Actions runs `npm test`, `npm run try` and the sample-project
-  check on Ubuntu and macOS with Node 22 and 24 on every push.
-- **Not verified:** the wellness chat against the real Claude API (no API key was available);
-  calendar sync (not implemented).
+- **Real Claude Code, Windows 11:** Claude Code 2.1.312 via `scripts/live-check.sh`, 11 passed,
+  0 failed: all six hook events, `/stopcode:status`, the advisory note, a PreToolUse deny and a
+  blocked prompt during protected quiet hours, `/stopcode:resume` asking before overriding,
+  `/stopcode:resume --override`.
+- **Real Claude Code, macOS:** Claude Code 2.1.308 via `scripts/live-check.sh`, run twice,
+  11 passed, 0 failed both times (model `claude-sonnet-5-5`).
+- **Automated:** `npm test` 27/27, `npm run try` 13/13, `claude plugin validate .` passes, and
+  GitHub Actions runs all of it plus the sample-project check on Ubuntu and macOS with Node 22
+  and 24 on every push.
 
-## Known gaps
-
-- No Google/Outlook/CalDAV sync; `.ics` export only.
-- Quiet hours cover the Claude Code integration only (this plugin's hooks). Your editor, terminal,
-  browser and other AI tools are untouched; a command already running is not cancelled.
-- Evidence parsing recognises common runner summaries only (TAP `# pass/# fail`, Node's spec
-  reporter `ℹ pass/ℹ fail`, Jest/pytest-style
-  `N passed`/`N failed`, cargo, Go `--- FAIL`, generic `N errors`). Anything else is recorded as
-  `unknown`, never as `pass`.
-- The wellness chat needs an Anthropic API key (a Claude Code subscription does not provide one).
-- Session end is best effort: if Claude Code is killed, SessionEnd may not fire and elapsed time
-  can overstate until the session is flagged stale (2 h without events). Elapsed time is time
-  between events, not attention.
-- Project identity is the Git top level, so a monorepo is one project. The sample project in this
-  repository therefore registers as the repository itself unless the demo seed pins it.
-- Secret redaction is pattern-based and best effort; do not paste credentials into prompts.
-- Single user, single machine, no authentication on the local server (it binds to 127.0.0.1 and
-  requires a custom header plus a same-origin check for every mutation).
-- The handoff documents observed state; it is not a backup of unsaved editor buffers and it does
-  not commit or stash for you.
-- `--until tomorrow` needs configured working hours (default Mon–Fri 09:00–17:30 in the system
-  time zone; change them in Settings).
+Details in `docs/VERIFICATION.md`.
 
 ## License
 

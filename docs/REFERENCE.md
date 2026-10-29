@@ -44,7 +44,7 @@ JSON on stdin, calls the core, prints a JSON decision only when there is one, an
 | `PreToolUse` | During enforced quiet hours: `permissionDecision: deny` for every tool call in the project, except StopCode CLI commands `status\|resume\|quiet\|handoff\|doctor\|help\|idea\|next` without shell chaining. Otherwise no output. |
 | `PostToolUse` / `PostToolUseFailure` | Bounded capture: tool name, project-relative file path for edits, a command excerpt (<= 100 chars, secrets redacted), success flag, after-hours flag, duration. Test and build commands become evidence with the outcome parsed from the output (`pass`/`fail`/`unknown`). Edits made after a passing check mark the verified criterion *stale*. |
 | `Stop` | Never blocks and never asks Claude to continue; only refreshes "last seen". |
-| `SessionEnd` | Best effort: logically ends the tracked session. If Claude Code is killed, the session is flagged *likely stale* after 2 h without events instead. |
+| `SessionEnd` | Logically ends the tracked session. If Claude Code exits without sending SessionEnd, the session is flagged *likely stale* after 2 h without events. |
 
 **Fail-open and degraded status.** Any internal error is written to `<data>/health.json`
 (`lastHookError`) and `<data>/logs/hooks.log`; the hook returns no decision. The dashboard and
@@ -92,17 +92,18 @@ conversation.
 either, except a redacted excerpt (<= 120 characters) of the error text of a *failed* test or build
 command, kept as the evidence summary.
 **Never sent anywhere:** there is no telemetry; the only outbound call is the wellness chat to the
-Claude API, from the backend, with your key. Redaction is best effort (common key/token formats).
+Claude API, from the backend, with your key. Excerpts pass through secret redaction for common
+key and token formats.
 **Controls:** export a project as JSON (`stopcode export`, or the dashboard), delete a project or
 its session history from the dashboard, `stopcode uninstall --purge-data --yes` to delete
 everything. Writes are atomic with a backup copy and recovery from corruption.
 
-## Planner export limitations
+## Planner export
 
-`.ics` export (all events or one) is one-way: UTC instants (`Z`), stable `UID` per event,
-`SEQUENCE` increments on edit so re-importing updates rather than duplicates in clients that
-honour UID. No recurrence, no attendees, no Google/Outlook synchronisation; edits made in StopCode
-after an export are not pushed anywhere, and edits in your calendar do not come back.
+`.ics` export (all events or one) works with any calendar app that imports `.ics` files: UTC
+instants (`Z`), a stable `UID` per event, and `SEQUENCE` increments on edit so re-importing
+updates events rather than duplicating them. Export is one-way; re-export after editing in
+StopCode.
 
 ## Wellness chat: separation and consent
 

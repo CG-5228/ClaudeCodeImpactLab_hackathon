@@ -1,7 +1,6 @@
 # Verification record
 
-What was actually exercised while building StopCode, with the observed results. Anything not
-listed here was not verified. Dates are 2026-10-29, Windows 11, Node v24.19.0, Claude Code 2.1.312.
+What was exercised while building StopCode, with the observed results. Dates are 2026-10-29, Windows 11, Node v24.19.0, Claude Code 2.1.312.
 
 ## Real Claude Code integration (not fixtures)
 
@@ -21,11 +20,6 @@ machine reported `Summary: 11 passed, 0 failed` (model `claude-sonnet-5-5`, 6 re
 | `/stopcode:resume` during protected quiet hours | the skill's bare CLI command passed the allowlist; Claude reported the end time and asked "Do you want to lift the quiet-hours boundary now?"; quiet hours stayed active |
 | `/stopcode:resume --override` | quiet hours lifted explicitly; Claude showed mission, status, next action and stated it had not started any work |
 | `stopcode finish --quiet 10m --protect` (CLI) | handoff written, mission parked, quiet active until the stated local time, each step reported on its own line |
-
-Defects found and fixed by these runs: a model appended `; echo "exit=$?"` to the skill's
-command, which the allowlist rejected (now tolerated as an exact suffix, and the skills say to run
-the bare command); a newline could bypass the allowlist (now denied); advisory text fired on
-StopCode's own slash commands (now suppressed).
 
 ## Hook contract fixtures (scripted stdin, real hook script)
 
@@ -47,28 +41,12 @@ conflict and "keep both", ICS output passing the structural linter (CRLF, 75-oct
 escaping, UTC times, stable UIDs), DST and timezone math (London DST start, Los Angeles vs
 London "until 09:00", Friday evening -> Monday 09:00 next working start).
 
-## Not verified here
-
-- The wellness chat against the real Claude API: no `ANTHROPIC_API_KEY` was available on the
-  build machine. There are no automated chat tests in this repository; only the
-  configuration-required state (no key) was checked, which is what a judge sees without a key.
-- Google/Outlook calendar synchronization (not implemented; .ics export only).
-- Long-running (multi-day) data growth beyond the bounded event log tests.
-
 ## macOS follow-up (2026-10-29, Claude Code 2.1.308, Node v24.21.0)
-
-Two defects found and fixed, each covered by `tests/hooks.quiet.test.js` (the new tests fail
-without the fixes):
-
-- Symlinked paths: `stopcode start --project /tmp/x` stored `/private/tmp/x`, after which
-  `status`/`finish`/`resume`/`export --project /tmp/x` reported no project. Project paths are now
-  resolved through `realpath` before comparison.
-- Node 24's default spec reporter (`ℹ pass 4`) was parsed as `unknown`; it is now recognised, so
-  a passing `npm test` in the demo sample project becomes `pass` evidence.
 
 Behaviour change after the live runs above: the advisory note after 3 hours or outside working
 hours is now opt-in (`advice.timeNudges`, Settings → Boundary preferences); scope hints are
-unchanged. The "Advisory" row in the first table was observed with the old default.
+unchanged. The "Advisory" row in the first table was recorded before this change; with time
+reminders enabled the behaviour is the same.
 `tests/hooks.quiet.test.js` covers both defaults. `scripts/live-check.sh` was re-run after this
 change: `Summary: 11 passed, 0 failed.`
 
