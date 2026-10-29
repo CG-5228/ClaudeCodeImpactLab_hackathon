@@ -34,9 +34,19 @@ recovery time you choose.
 ```bash
 git clone https://github.com/CG-5228/ClaudeCodeImpactLab_hackathon.git stopcode && cd stopcode
 npm install
-npm test                                # 25 tests, no network or API key needed
+npm run try                             # the whole loop end to end in ~1 s (see below)
+npm test                                # 26 tests, no network or API key needed
 npm run demo -- --reset --seed          # sample data + dashboard at http://127.0.0.1:4821
 ```
+
+`npm run try` needs neither Claude Code nor an API key. It drives the real CLI and the real hook
+script with the same JSON Claude Code sends, in a throwaway directory, and checks what was
+actually stored: goal recorded and injected into Claude's context, scope creep noticed and the
+idea parked, failing then passing `npm test` captured as evidence, one-command clock-out with a
+handoff, a late-night tool call and prompt blocked, resume refused until an explicit override.
+It ends with `Summary: 12 passed, 0 failed.`
+
+![StopCode dashboard: the original goal, completion criteria with evidence, the next step and one Clock out button](docs/img/dashboard.png)
 
 Then, in any project of your own:
 
@@ -146,116 +156,23 @@ Scope changes are recorded instead of silently absorbed: `stopcode scope accept 
 accepted addition (the original objective stays immutable), `stopcode idea add "<text>"` to park
 an idea for later.
 
-## CLI: the independent control path
+## Privacy, quiet hours and the rest, in short
 
-Everything the skills and the dashboard do goes through `bin/stopcode.js`, which works with the
-dashboard closed and Claude Code closed. Run it from inside the project, or pass `--project <path>`.
+- **Local only.** Everything is stored in `~/.stopcode` on your machine. No telemetry. Stored:
+  short redacted excerpts (prompts <= 120 chars, commands <= 100 chars), project-relative file
+  paths, tool names, timestamps, test summaries and what you type into StopCode. Never stored:
+  file contents, full prompts, transcripts, API keys. The only outbound call is the optional
+  wellness chat to the Claude API, from the local backend, with your key.
+- **Quiet hours cover one project and only Claude Code's actions in it.** Your editor, terminal,
+  other projects, the dashboard and the StopCode CLI keep working. Without `--protect` they are
+  advisory only. Lifting them is always one explicit step (`/stopcode:resume` then yes, or
+  `stopcode resume --override`), and the override is recorded.
+- **Hooks fail open.** Any internal error is logged and shown as DEGRADED in the dashboard and
+  `stopcode doctor`; a hook never blocks Claude Code because StopCode broke.
+- **Everything works without the dashboard:** `node bin/stopcode.js help` lists the full CLI.
 
-```bash
-node bin/stopcode.js start "Fix login validation" --criteria "auth tests pass" --criteria "empty password rejected"
-node bin/stopcode.js status                       # add --json for the full projectView
-node bin/stopcode.js evidence add --kind test_run --outcome pass --summary "npm test: 4 passed" --criterion 1
-node bin/stopcode.js criterion confirm 2 --note "checked by hand"      # user confirmation, not verification
-node bin/stopcode.js idea add "Add a password strength meter"
-node bin/stopcode.js finish --quiet 30m --protect --note "stopping for today"
-node bin/stopcode.js resume                       # exit code 3 while quiet hours are active
-node bin/stopcode.js resume --override            # explicit override
-node bin/stopcode.js quiet status | start 2h --protect | end | override
-node bin/stopcode.js break start | end | status
-node bin/stopcode.js handoff list | show [id]
-node bin/stopcode.js planner add --title "Walk" --type recovery --start <ISO> --end <ISO> [--allow-overlap]
-node bin/stopcode.js planner ics --out planner.ics
-node bin/stopcode.js doctor                       # integration self-check
-node bin/stopcode.js export --out my-project.json
-node bin/stopcode.js uninstall [--purge-data --yes]
-```
-
-Global options: `--project <path|id>`, `--session <id>`, `--json`, `--data-dir <path>`.
-`node bin/stopcode.js help` lists everything. `bin/stopcode` (sh) and `bin/stopcode.cmd` are
-thin wrappers.
-
-## How the hooks behave
-
-All hooks are declared in `hooks/hooks.json` and run `hooks/stopcode-hook.js`, which reads the event
-JSON on stdin, calls the core, prints a JSON decision only when there is one, and always exits 0.
-
-| Event | Behaviour |
-| --- | --- |
-| `SessionStart` | Starts or reopens the tracked session and injects context: the mission (unchanged), criteria status, parked ideas, quiet-hours state, the last handoff's resume context. Untracked project at startup: one sentence pointing to `/stopcode:start`. |
-| `UserPromptSubmit` | During **enforced** quiet hours: blocks the prompt (except `/stopcode:resume\|status\|pause\|finish`) with the reason and the way out. Otherwise records a bounded prompt excerpt and may add *advisory* context: a scope hint when wording like "while you're at it" appears and the text is not an already-accepted addition, or a once-per-interval note after 3 h elapsed or outside working hours. Default interval 20 min; dismissible; can be disabled in Settings. |
-| `PreToolUse` | During enforced quiet hours: `permissionDecision: deny` for every tool call in the project, except StopCode CLI commands `status\|resume\|quiet\|handoff\|doctor\|help\|idea\|next` without shell chaining. Otherwise no output. |
-| `PostToolUse` / `PostToolUseFailure` | Bounded capture: tool name, project-relative file path for edits, a command excerpt (<= 100 chars, secrets redacted), success flag, after-hours flag, duration. Test and build commands become evidence with the outcome parsed from the output (`pass`/`fail`/`unknown`). Edits made after a passing check mark the verified criterion *stale*. |
-| `Stop` | Never blocks and never asks Claude to continue; only refreshes "last seen". |
-| `SessionEnd` | Best effort: logically ends the tracked session. If Claude Code is killed, the session is flagged *likely stale* after 2 h without events instead. |
-
-**Fail-open and degraded status.** Any internal error is written to `<data>/health.json`
-(`lastHookError`) and `<data>/logs/hooks.log`; the hook returns no decision. The dashboard and
-`stopcode doctor` then show a **DEGRADED** note with the error rather than pretending everything
-is fine. Hook timeouts are 5–15 s and the hook never blocks on model judgment.
-
-## Quiet hours: exactly what is covered
-
-- **Scope: one project** (its root directory, the Git top level when available). Shown with name
-  and path wherever quiet hours are displayed.
-- **Blocked** (only when you chose *protect* / "Block new coding actions"): new prompts and new tool
-  calls in Claude Code sessions whose working directory is inside that project.
-- **Not blocked:** Claude Code itself (it is not closed), commands already running, other projects,
-  your editor and terminal, the dashboard, the wellness chat, and the StopCode CLI allowlist above.
-  Without *protect*, quiet hours are advisory only.
-- **Override:** always explicit: `/stopcode:resume` (asks yes/no), `stopcode resume --override`,
-  `stopcode quiet override`, or `stopcode quiet end`. Overrides are recorded in the timeline.
-- **When the interval ends** nothing starts automatically; status says "interval ended; resume when
-  you choose" until you resume.
-- **Calendar-driven quiet hours** exist only behind an explicit Settings toggle
-  (`calendarQuietHours.enabled`) and a per-project list; then recovery and personal planner blocks
-  enforce for those projects, with the same override path.
-- `stopcode uninstall` ends any active quiet hours so no boundary outlives the integration.
-
-## Storage and privacy
-
-Everything lives in one directory, `~/.stopcode` by default (`STOPCODE_DATA_DIR` or `--data-dir`
-to override; the demo uses `<repo>/.stopcode-demo`):
-
-```
-<data>/state.json                 projects, missions, sessions, settings, planner, handoff index (+ .bak)
-<data>/events/<projectId>.jsonl   bounded append-only activity events per project
-<data>/handoffs/<projectId>/*.md  readable handoff receipts
-<data>/chat/conversations.json    wellness chat (separate from coding state)
-<data>/health.json                last hook event / last hook error for the self-check
-<data>/logs/hooks.log             bounded diagnostics
-<data>/lock/                      cross-process mutex
-```
-
-**Stored:** prompt excerpts (<= 120 characters, secrets redacted), project-relative file paths of
-edited files, command excerpts (<= 100 characters, redacted), tool names, timestamps, parsed test
-summaries, what you typed into StopCode (mission, criteria, ideas, notes), planner events, the chat
-conversation.
-**Not stored:** file contents, full prompts, transcripts, API keys. Tool output is not stored
-either, except a redacted excerpt (<= 120 characters) of the error text of a *failed* test or build
-command, kept as the evidence summary.
-**Never sent anywhere:** there is no telemetry; the only outbound call is the wellness chat to the
-Claude API, from the backend, with your key. Redaction is best effort (common key/token formats).
-**Controls:** export a project as JSON (`stopcode export`, or the dashboard), delete a project or
-its session history from the dashboard, `stopcode uninstall --purge-data --yes` to delete
-everything. Writes are atomic with a backup copy and recovery from corruption.
-
-## Planner export limitations
-
-`.ics` export (all events or one) is one-way: UTC instants (`Z`), stable `UID` per event,
-`SEQUENCE` increments on edit so re-importing updates rather than duplicates in clients that
-honour UID. No recurrence, no attendees, no Google/Outlook synchronisation; edits made in StopCode
-after an export are not pushed anywhere, and edits in your calendar do not come back.
-
-## Wellness chat: separation and consent
-
-- Separate conversation document, separate system prompt, separate endpoint
-  (`/api/chat/...`). It never reads the Claude Code conversation.
-- It receives a StopCode summary (mission, criteria status, elapsed time, quiet state) only when
-  *Share summary* is enabled in Settings. Never prompts, file names or contents.
-- Replies may include suggestions (park an idea, add a recovery block, clock out). They render
-  as buttons and do nothing until clicked; "Done" appears only after the action persisted.
-- Your message is kept even when the API call fails, and the failure is shown with its type
-  (missing credentials, auth, rate limit, timeout, network, refusal). The key stays on the backend.
+Full details: [docs/REFERENCE.md](docs/REFERENCE.md) (CLI, every hook event, quiet-hours scope,
+storage layout, planner `.ics` limits, wellness chat consent).
 
 ## Uninstall
 
@@ -278,17 +195,18 @@ data directory, prints every command with absolute paths, and starts the dashboa
 ## Testing
 
 ```bash
+npm run try                       # end-to-end walkthrough against the real CLI and hook script
 npm test                          # node --test tests/
 cd sample-project && npm test     # the demo fixture: fails 1 of 4 until the deliberate bug is fixed
 claude plugin validate .
 ```
 
-The suite under `tests/` (25 tests) covers: scope decisions, the completion state machine and
+The suite under `tests/` (26 tests) covers: scope decisions, the completion state machine and
 evidence parsing (`core.mission`); project identity, Git roots and symlinked paths
 (`core.projects`, `hooks.quiet`); atomic storage, backup recovery and cross-process locking
 (`core.store`); and the real hook script spawned with Claude Code-shaped stdin during protected
 quiet hours, the CLI allowlist, resume exit code 3 / `--override`, fail-open behaviour and `.ics`
-linting (`hooks.quiet`). Not covered by automated tests: the HTTP API, the wellness chat, the
+linting (`hooks.quiet`); and `npm run try` itself (`try`). Not covered by automated tests: the HTTP API, the wellness chat, the
 dashboard UI and handoff Markdown rendering (exercised manually, see `docs/VERIFICATION.md`).
 
 ### Verification status
@@ -299,7 +217,7 @@ dashboard UI and handoff Markdown rendering (exercised manually, see `docs/VERIF
   `/stopcode:resume` asking before overriding, `/stopcode:resume --override`. Details in
   `docs/VERIFICATION.md`.
 - **Verified with fixtures / CLI only:** on macOS (Claude Code 2.1.308, Node v24.21.0,
-  2026-10-29): `npm test` 25/25, `claude plugin validate .`, sample project fails 1 of 4 as
+  2026-10-29): `npm test` 26/26, `claude plugin validate .`, sample project fails 1 of 4 as
   intended, CLI start/status/finish/export through a symlinked path (`/tmp`).
   `scripts/live-check.sh` was also re-run with real Claude Code 2.1.308 on macOS: 11 passed,
   0 failed (model `claude-sonnet-5-5`).

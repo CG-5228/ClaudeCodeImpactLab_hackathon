@@ -66,7 +66,7 @@ without the fixes):
 - Node 24's default spec reporter (`ℹ pass 4`) was parsed as `unknown`; it is now recognised, so
   a passing `npm test` in the demo sample project becomes `pass` evidence.
 
-`npm test`: 25 passed, 0 failed. `claude plugin validate .`: passed. `scripts/live-check.sh`
+`npm test`: 26 passed, 0 failed (includes `npm run try`, which reports `Summary: 12 passed, 0 failed.`). `claude plugin validate .`: passed. `scripts/live-check.sh`
 with real Claude Code 2.1.308 (model `claude-sonnet-5-5`): `Summary: 11 passed, 0 failed`:
 status skill, hook events in health.json, PreToolUse deny of a Write (file not created), blocked
 prompt, resume keeping the boundary without override, `--override` lifting it.

@@ -10,6 +10,7 @@
     "serve": "node bin/stopcode.js serve",
     "test": "node --test tests/",
     "demo": "node scripts/demo.js",
+    "try": "node scripts/try.js",
     "doctor": "node bin/stopcode.js doctor",
     "validate:plugin": "claude plugin validate ."
   },
