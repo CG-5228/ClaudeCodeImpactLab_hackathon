@@ -50,7 +50,21 @@ London "until 09:00", Friday evening -> Monday 09:00 next working start).
 ## Not verified here
 
 - The wellness chat against the real Claude API: no `ANTHROPIC_API_KEY` was available on the
-  build machine. The chat path was exercised only against a local mock of the Messages API
-  (see `tests/chat.*.test.js`). The configuration-required state is what a judge sees without a key.
+  build machine. There are no automated chat tests in this repository; only the
+  configuration-required state (no key) was checked, which is what a judge sees without a key.
 - Google/Outlook calendar synchronization (not implemented; .ics export only).
 - Long-running (multi-day) data growth beyond the bounded event log tests.
+
+## macOS follow-up (2026-10-29, Claude Code 2.1.308, Node v24.21.0)
+
+Two defects found and fixed, each covered by `tests/hooks.quiet.test.js` (the new tests fail
+without the fixes):
+
+- Symlinked paths: `stopcode start --project /tmp/x` stored `/private/tmp/x`, after which
+  `status`/`finish`/`resume`/`export --project /tmp/x` reported no project. Project paths are now
+  resolved through `realpath` before comparison.
+- Node 24's default spec reporter (`ℹ pass 4`) was parsed as `unknown`; it is now recognised, so
+  a passing `npm test` in the demo sample project becomes `pass` evidence.
+
+`npm test`: 25 passed, 0 failed. `claude plugin validate .`: passed. `scripts/live-check.sh` was
+not re-run on this machine.

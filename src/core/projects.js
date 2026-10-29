@@ -2,12 +2,32 @@
 // Stable project identity. A project is identified by its root directory (the Git
 // top-level when available, otherwise the directory itself). The id is a hash of the
 // normalized root path so it is stable across sessions and machines-with-same-path.
+const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { stableId } = require('./ids');
 
+// Resolve symlinks (macOS /tmp -> /private/tmp, Git's realpath'd top level) so the same
+// directory always maps to the same project. Paths that do not exist yet resolve through
+// their nearest existing ancestor.
+function canonicalPath(p) {
+  const abs = path.resolve(String(p || '.'));
+  let head = abs;
+  const tail = [];
+  for (;;) {
+    try {
+      return path.join(fs.realpathSync.native(head), ...tail);
+    } catch (e) {
+      const parent = path.dirname(head);
+      if (parent === head) return abs;
+      tail.unshift(path.basename(head));
+      head = parent;
+    }
+  }
+}
+
 function normalizeForCompare(p) {
-  let r = path.resolve(String(p || '.'));
+  let r = canonicalPath(p);
   r = r.replace(/[\\/]+$/, '');
   if (process.platform === 'win32') r = r.toLowerCase().replace(/\\/g, '/');
   return r;
@@ -21,7 +41,7 @@ function isInside(root, dir) {
 
 // Git top-level detection with a hard timeout; never throws.
 function detectRoot(dir) {
-  const abs = path.resolve(String(dir || '.'));
+  const abs = canonicalPath(dir);
   try {
     const out = execFileSync('git', ['-C', abs, 'rev-parse', '--show-toplevel'], {
       encoding: 'utf8',
@@ -62,8 +82,8 @@ function createProjectRecord(root, { git = false, now } = {}) {
   const at = now || new Date().toISOString();
   return {
     id: projectIdForRoot(root),
-    root: path.resolve(root),
-    name: path.basename(path.resolve(root)) || path.resolve(root),
+    root: canonicalPath(root),
+    name: path.basename(canonicalPath(root)) || canonicalPath(root),
     git: !!git,
     createdAt: at,
     activeMissionId: null,
@@ -82,7 +102,7 @@ function createProjectRecord(root, { git = false, now } = {}) {
 function ensureProject(state, dir, { now, detect = true } = {}) {
   const existing = findProject(state, dir);
   if (existing) return existing;
-  const det = detect ? detectRoot(dir) : { root: path.resolve(dir), git: false };
+  const det = detect ? detectRoot(dir) : { root: canonicalPath(dir), git: false };
   const id = projectIdForRoot(det.root);
   if (state.projects[id]) return state.projects[id];
   const record = createProjectRecord(det.root, { git: det.git, now });
@@ -93,9 +113,9 @@ function ensureProject(state, dir, { now, detect = true } = {}) {
 function relativePath(project, filePath) {
   if (!filePath) return null;
   try {
-    const abs = path.resolve(String(filePath));
+    const abs = canonicalPath(filePath);
     if (project && project.root && isInside(project.root, abs)) {
-      return path.relative(project.root, abs).split(path.sep).join('/') || '.';
+      return path.relative(canonicalPath(project.root), abs).split(path.sep).join('/') || '.';
     }
     return path.basename(abs);
   } catch (e) {
@@ -104,6 +124,7 @@ function relativePath(project, filePath) {
 }
 
 module.exports = {
+  canonicalPath,
   normalizeForCompare,
   isInside,
   detectRoot,

@@ -241,35 +241,37 @@ cd sample-project && npm test     # the demo fixture: fails 1 of 4 until the del
 claude plugin validate .
 ```
 
-The suite under `tests/` targets the core through its public operations: mission/criteria/evidence
-and completion rules, quiet-hours scheduling across time zones, the hook handlers with recorded
-Claude Code event fixtures, handoff rendering, planner overlaps and `.ics` linting, storage
-recovery, and the API contract. See the test files for the exact coverage.
+The suite under `tests/` (25 tests) covers: scope decisions, the completion state machine and
+evidence parsing (`core.mission`); project identity, Git roots and symlinked paths
+(`core.projects`, `hooks.quiet`); atomic storage, backup recovery and cross-process locking
+(`core.store`); and the real hook script spawned with Claude Code-shaped stdin during protected
+quiet hours, the CLI allowlist, resume exit code 3 / `--override`, fail-open behaviour and `.ics`
+linting (`hooks.quiet`). Not covered by automated tests: the HTTP API, the wellness chat, the
+dashboard UI and handoff Markdown rendering (exercised manually, see `docs/VERIFICATION.md`).
 
 ### Verification status
 
-<!-- ORCHESTRATOR: fill in before submission. Keep the two columns separate. -->
-
-- **Verified with real Claude Code (version, date):** _to be filled in_ — which skills, which hook
-  events, quiet-hours block observed, resume override observed.
-- **Verified with fixtures / CLI only:** CLI walkthrough on a scratch data directory (start, status,
-  evidence, idea, planner add/ics, finish `--quiet 2m --protect`, blocked UserPromptSubmit and
-  PreToolUse, allow-listed CLI call, resume exit 3, resume `--override`, quiet end, handoff
-  list/show, doctor, export, uninstall); sample project fail 1/4 then pass 4/4; `claude plugin
-  validate .`; `scripts/demo.js --reset --seed --no-serve` and re-seed idempotency.
-- **Not verified:** _to be filled in_ (for example the wellness chat without an API key on the
-  demo machine).
+- **Verified with real Claude Code:** Claude Code 2.1.312 on Windows 11 (2026-10-29) via
+  `scripts/live-check.sh` (11 passed, 0 failed): all six hook events, `/stopcode:status`, the
+  advisory note, a PreToolUse deny and a blocked prompt during protected quiet hours,
+  `/stopcode:resume` asking before overriding, `/stopcode:resume --override`. Details in
+  `docs/VERIFICATION.md`.
+- **Verified with fixtures / CLI only:** on macOS (Claude Code 2.1.308, Node v24.21.0,
+  2026-10-29): `npm test` 25/25, `claude plugin validate .`, sample project fails 1 of 4 as
+  intended, CLI start/status/finish/export through a symlinked path (`/tmp`). The live
+  Claude Code check was not re-run on this machine, and 2.1.308 is older than the stated minimum.
+- **Not verified:** the wellness chat against the real Claude API (no API key was available);
+  calendar sync (not implemented).
 
 ## Known gaps
 
 - No Google/Outlook/CalDAV sync; `.ics` export only.
 - Quiet hours cover the Claude Code integration only (this plugin's hooks). Your editor, terminal,
   browser and other AI tools are untouched; a command already running is not cancelled.
-- Evidence parsing recognises common runner summaries only (TAP `# pass/# fail`, Jest/pytest-style
+- Evidence parsing recognises common runner summaries only (TAP `# pass/# fail`, Node's spec
+  reporter `ℹ pass/ℹ fail`, Jest/pytest-style
   `N passed`/`N failed`, cargo, Go `--- FAIL`, generic `N errors`). Anything else is recorded as
-  `unknown`, never as `pass`. At the time of writing, Node's default `spec` reporter output
-  (`ℹ pass 4`) is not recognised, so a passing `node --test` captured by the hook is `unknown`
-  until you record it explicitly.
+  `unknown`, never as `pass`.
 - The wellness chat needs an Anthropic API key (a Claude Code subscription does not provide one).
 - Session end is best effort: if Claude Code is killed, SessionEnd may not fire and elapsed time
   can overstate until the session is flagged stale (2 h without events). Elapsed time is time

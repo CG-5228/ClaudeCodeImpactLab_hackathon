@@ -49,8 +49,9 @@ function parseTestOutput(text) {
   let passed = null;
   let failed = null;
   let m;
-  if ((m = /# pass (\d+)/.exec(t))) passed = Number(m[1]);
-  if ((m = /# fail (\d+)/.exec(t))) failed = Number(m[1]);
+  // TAP (`# pass 4`) and Node's default spec reporter (`ℹ pass 4`).
+  if ((m = /^\s*[#ℹ] pass (\d+)/m.exec(t))) passed = Number(m[1]);
+  if ((m = /^\s*[#ℹ] fail (\d+)/m.exec(t))) failed = Number(m[1]);
   if (passed === null && (m = /(\d+) (?:tests? )?passed/.exec(t))) passed = Number(m[1]);
   if (failed === null && (m = /(\d+) (?:tests? )?failed/.exec(t))) failed = Number(m[1]);
   if ((m = /test result: (ok|FAILED)\. (\d+) passed; (\d+) failed/.exec(t))) {
