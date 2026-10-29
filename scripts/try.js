@@ -95,6 +95,13 @@ try {
   check('resume refuses while quiet hours are active (exit 3)', cli('resume').status === 3);
   const resume = cli('resume', '--override');
   check('explicit override restores the handoff and lifts quiet hours', resume.status === 0 && !view().quiet.enforced, oneLine(resume.out, 220));
+
+  step('8. New Claude Code session: no re-explaining, Claude already has the context');
+  const next = hook('SessionStart', { session_id: 'next-morning', source: 'startup' });
+  const brief = (next.json && next.json.hookSpecificOutput && next.json.hookSpecificOutput.additionalContext) || '';
+  check('goal, next step, parked idea and handoff context injected automatically',
+    /empty passwords are rejected/.test(brief) && /Next step:/.test(brief) && /Dark mode toggle/.test(brief) && /Last handoff resume context/.test(brief),
+    oneLine(brief.slice(brief.indexOf('Next step:')), 200));
 } catch (err) {
   failed++;
   console.log(`FAIL  unexpected error: ${err && err.stack ? err.stack : err}`);

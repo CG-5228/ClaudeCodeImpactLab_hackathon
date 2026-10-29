@@ -71,7 +71,7 @@ hours is now opt-in (`advice.timeNudges`, Settings → Boundary preferences); sc
 unchanged. The "Advisory" row in the first table was observed with the old default.
 `tests/hooks.quiet.test.js` covers both defaults.
 
-`npm test`: 27 passed, 0 failed (includes `npm run try`, which reports `Summary: 12 passed, 0 failed.`). `claude plugin validate .`: passed. `scripts/live-check.sh`
+`npm test`: 27 passed, 0 failed (includes `npm run try`, which reports `Summary: 13 passed, 0 failed.`). `claude plugin validate .`: passed. `scripts/live-check.sh`
 with real Claude Code 2.1.308 (model `claude-sonnet-5-5`): `Summary: 11 passed, 0 failed`:
 status skill, hook events in health.json, PreToolUse deny of a Write (file not created), blocked
 prompt, resume keeping the boundary without override, `--override` lifting it.

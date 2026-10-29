@@ -9,5 +9,5 @@ const H = require('./helpers');
 test('scripts/try.js runs the full loop against the real CLI and hook and reports no failures', () => {
   const r = spawnSync(process.execPath, [path.join(H.REPO, 'scripts', 'try.js')], { env: H.childEnv(''), encoding: 'utf8', timeout: 60000 });
   assert.equal(r.status, 0, r.stdout + r.stderr);
-  assert.match(r.stdout, /Summary: 12 passed, 0 failed\./);
+  assert.match(r.stdout, /Summary: 13 passed, 0 failed\./);
 });

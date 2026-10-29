@@ -25,8 +25,9 @@ recovery time you choose.
 - **How it gives time back:**
   - *Stopping costs one command.* `/stopcode:finish` (or **Clock out** in the dashboard) writes
     the handoff for you: original goal, which criteria are verified, files and Git state, parked
-    ideas, next action. `/stopcode:resume` restores it the next day, so you don't spend the
-    start of your next session reconstructing context.
+    ideas, next action. The next day every new Claude Code session starts with the goal, the
+    next step, parked ideas and the handoff already in Claude's context, so you don't spend the
+    start of the day re-explaining where you were.
   - *Scope creep gets parked, not done tonight.* "While you're at it" ideas go on a list for later.
   - *Your evening stays yours.* Opt-in quiet hours block new Claude Code actions in that project
     until the time you chose, so a "quick fix at 11 pm" doesn't happen on autopilot.
@@ -36,6 +37,9 @@ recovery time you choose.
   context when a prompt looks like scope creep, at most once every 20 minutes. Reminders after
   3 hours or outside working hours are off unless you turn them on; all advice can be turned off
   in Settings.
+- **Daily use is two commands:** `/stopcode:start <goal>` when you begin, `/stopcode:finish`
+  when you stop. The dashboard, wellness chat and planner are optional extras; you never have to
+  open them.
 
 ### Try it in a minute
 
@@ -52,8 +56,9 @@ script with the same JSON Claude Code sends, in a throwaway directory, and check
 actually stored: goal recorded and injected into Claude's context, scope creep noticed and the
 idea parked, failing then passing `npm test` captured as evidence, the shutdown command (handoff
 plus tomorrow's list, Claude Code paused until the next working morning), a late-night tool call
-and prompt blocked, resume refused until an explicit override.
-It ends with `Summary: 12 passed, 0 failed.`
+and prompt blocked, resume refused until an explicit override, and the next session starting with
+the goal, next step and parked ideas already in Claude's context.
+It ends with `Summary: 13 passed, 0 failed.`
 
 ![StopCode dashboard: the original goal, completion criteria with evidence, the next step and one Clock out button](docs/img/dashboard.png)
 
